@@ -1,0 +1,47 @@
+"use client";
+import { Input } from "../ui/input";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useDebouncedCallback } from "use-debounce";
+import { useState, useEffect } from "react";
+
+function NavSearch() {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  const searchText = searchParams.get("search");
+
+  const [search, setSearch] = useState(searchText?.toString() || "");
+
+  const handleSearch = useDebouncedCallback((value: string) => {
+    const params = new URLSearchParams(searchParams);
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+
+    replace(`${pathname}?${params.toString()}`);
+  }, 500);
+
+  useEffect(() => {
+    if (!searchText) {
+      setSearch("");
+    }
+  }, [searchText]);
+
+  return (
+    <Input
+      type="text"
+      placeholder="Find a property..."
+      className="max-w-xs dark:bg-muted"
+      value={search}
+      onChange={(e) => {
+        setSearch(e.target.value);
+        handleSearch(e.target.value);
+      }}
+    />
+  );
+}
+
+export default NavSearch;
